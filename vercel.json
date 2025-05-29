@@ -17,7 +17,7 @@
     "env": {
         "APP_ENV": "production",
         "APP_DEBUG": "false",
-        "APP_URL": "https://your-vercel-app-url.vercel.app",
+        "APP_URL": "https://https://wstation.vercel.app",
         "APP_KEY": "base64:82+SYs1MMYgjRHTbivt2yS/462dpbl72YvdHa7G+daY=",
         "APP_CONFIG_CACHE": "/tmp/config.php",
         "APP_EVENTS_CACHE": "/tmp/events.php",
