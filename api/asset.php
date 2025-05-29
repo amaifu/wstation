@@ -7,8 +7,8 @@
  */
 if ($_GET['type'] === 'css') {
     header("Content-type: text/css; charset: UTF-8");
-    echo require __DIR__ . '/../public/build/assets/' . basename($_GET['file']);
+    echo require __DIR__ . '/../public/build/assets/app-DejA6GR2.css';
 } else if ($_GET['type'] === 'js') {
     header('Content-Type: application/javascript; charset: UTF-8');
-    echo require __DIR__ . '/../public/build/assets/' . basename($_GET['file']);
+    echo require __DIR__ . '/../public/build/assets/app-OfeCqFc7.js';
 }
