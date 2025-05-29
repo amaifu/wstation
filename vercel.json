@@ -36,17 +36,6 @@
         "DB_DATABASE": "wstationdb_floorextra",
         "DB_USERNAME": "wstationdb_floorextra",
         "DB_PASSWORD": "92e3c7b3d248b43ca46a1804b9e58b20eb7c8d80"
-
-      },
-      "scripts": {
-        "vercel": [
-          "@php -v",
-          "npm -v",
-          "npm install && npm run dev"
-        ],
-        "post-autoload-dump": [
-            "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
-            "@php artisan package:discover --ansi"
-        ]
-    }
+        
+      }
 }
