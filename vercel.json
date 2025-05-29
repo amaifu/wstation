@@ -5,6 +5,10 @@
         "api/index.php": { "runtime": "vercel-php@0.6.0" }
     },
     "routes": [
+        { 
+            "src": "/(css|js)/(.*)$",
+            "dest": "/api/assets.php?type=$1&file=$2"
+        },
         {
             "src": "/(.*)",
             "dest": "/api/index.php"
@@ -33,5 +37,16 @@
         "DB_USERNAME": "wstationdb_floorextra",
         "DB_PASSWORD": "92e3c7b3d248b43ca46a1804b9e58b20eb7c8d80"
 
-      }
+      },
+      "scripts": {
+        "vercel": [
+          "@php -v",
+          "npm -v",
+          "npm install && npm run dev"
+        ],
+        "post-autoload-dump": [
+            "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
+            "@php artisan package:discover --ansi"
+        ]
+    }
 }
