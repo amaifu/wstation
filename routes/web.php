@@ -12,3 +12,7 @@ Route::get('/memes', function () {
 Route::get('/anime', function () {
     return view('anime');
 });
+
+Route::get('/admin', function () {
+    return view('admin-login');
+});

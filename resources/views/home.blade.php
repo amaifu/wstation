@@ -62,4 +62,6 @@
         </div>
     </div>
 
+    @component('components.login-method-overtlay')@endcomponent
+
 @component('components.footer')@endcomponent
