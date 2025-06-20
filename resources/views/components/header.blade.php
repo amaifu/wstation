@@ -3,6 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="app-url" content={{ env('APP_URL') }}>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="rand-token" content="{{ strtoupper(Str::random(5)) }}">
+    <meta name="session" content="{{ $session = session()->get('login') }}">
+    <meta name="user-session" content="{{ $userSession = session()->get('user') }}">
     <title>WStation</title>
     @component('components.funcs')@endcomponent
 </head>
@@ -18,23 +23,65 @@
             <i class="fa-solid fa-magnifying-glass text-gray-400 text-sm"></i>
             <input type="search" class="bg-gray-100 text-gray-500 outline-0 py-2 px-3 text-sm w-full" placeholder="Search">
         </div>
-        
-        <div class="header-right flex items-center gap-6 flex-1 justify-end">
-            <i class="fa-solid fa-magnifying-glass cursor-pointer visible md:invisible md:absolute"></i>
-            <i class="fa-solid fa-arrow-up-from-bracket cursor-pointer"></i>
-            <i class="fa-regular fa-clock cursor-pointer"></i>
-            <i class="fa-regular fa-bookmark cursor-pointer"></i>
-            <div class="circle-pp rounded-full overflow-hidden">
-                <img class="w-8 h-8" src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png" alt="">
+
+        <div class="header-right flex-1 justify-end flex">
+
+            <div class="{{ session()->has('login') ? 'flex' : 'hidden' }} items-center gap-6">
+            
+                <i class="fa-solid fa-magnifying-glass cursor-pointer visible md:invisible md:absolute"></i>
+    
+                <!-- Upload Menu -->
+                <div>
+                    <i id="upload-menu" class="fa-solid fa-arrow-up-from-bracket cursor-pointer p-1"></i>
+                    <!-- Upload Menu Overlay -->
+                        <div id="upload-menu-overlay" class="hidden absolute -translate-x-30 shadow-lg border-1 border-gray-300 bg-white p-1 rounded-sm w-fit">
+                            <button type="text" class="flex gap-2 items-center p-4 rounded-sm hover:bg-gray-200 cursor-pointer">
+                                <i class="w-5 fa-solid fa-arrow-up-from-bracket"></i>
+                                <p type="text" class="text-sm cursor-pointer">Upload Video</p>
+                            </buttton>
+                        </div>
+                </div>
+    
+                <i class="fa-regular fa-clock cursor-pointer p-1"></i>
+    
+                <i class="fa-regular fa-bookmark cursor-pointer p-1"></i>
+    
+                <!-- Profile Menu -->
+                <div>
+                    <div id="user-profile" class="circle-pp rounded-full overflow-hidden cursor-pointer p-1">
+                        <img class="w-8 h-8 rounded-full" src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png" alt="">
+                    </div>
+    
+                    <!-- Profile Menu Overlay -->
+                    <div id="profile-menu-overlay" class="hidden absolute right-0 -translate-x-6 -translate-y-1 shadow-lg border-1 border-gray-300 bg-white p-4 rounded-sm float-right w-fit">
+                        <h2 class="font-bold mb-2">User Profile</h2>
+                        <div class="flex flex-col">
+                            <a href="" class="hover:bg-gray-200 p-2 flex gap-2 items-center rounded-sm">
+                                <i class="w-5 fa-solid fa-user-pen"></i>
+                                <p class="text-sm cursor-pointer">Edit Profile</p>
+                            </a>
+                            <a href="logout" class="hover:bg-gray-200 p-2 flex gap-2 items-center rounded-sm">
+                                <i class="w-5 fa-solid fa-arrow-right-from-bracket"></i>
+                                <p class="text-sm cursor-pointer">Log Out</p>
+                            </a>
+                        </div>
+                    </div>
+    
+                </div>
+
             </div>
+
+            <button id="btn-signin" type="text" class="p-2 cursor-pointer text-white text-sm rounded-sm bg-blue-500 {{ session()->has('login') ? 'hidden' : 'flex' }}">Sign In</button>
+
         </div>
+
 
     </header>
 
     <div class="flex h-screen">
         <aside class="bg-[rgba(255,255,255,.5)] w-68 flex flex-col top-0 left-0 h-full backdrop-blur-xs pt-18 transition-all ease-in-out duration-500">
             <nav class="flex-1">
-                <a href="/" class="navs bg-blue-100 px-5 py-2 flex items-center gap-4">
+                <a href="/" class="navs {{ Route::current()->uri() == '/' ? 'bg-blue-100' : 'bg-white' }} px-5 py-2 flex items-center gap-4">
                     @if (Route::current()->uri() == '/')
                         <svg width="30" height="30" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M13.85 3.70391C13.05 3.10391 11.95 3.10391 11.15 3.70391L4.65 8.57891C4.08344 9.00383 3.75 9.6707 3.75 10.3789V18.5003C3.75 19.743 4.75736 20.7503 6 20.7503H10.25C10.6642 20.7503 11 20.4145 11 20.0003V17.0003C11 16.1719 11.6716 15.5003 12.5 15.5003C13.3284 15.5003 14 16.1719 14 17.0003V20.0003C14 20.4145 14.3358 20.7503 14.75 20.7503H19C20.2426 20.7503 21.25 19.743 21.25 18.5003V10.3789C21.25 9.6707 20.9166 9.00383 20.35 8.57891L13.85 3.70391Z" fill="#323544"/>
@@ -47,28 +94,30 @@
                         <p class="nav-text text-md">Home</p>
                     @endif
                 </a>
-                <a href="/memes" class="navs px-5 py-2 flex items-center gap-4">
-                    @if (Route::current()->uri() == '/memes')
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M14.16 16.6L13.91 16.17H13.92C14.39 15.98 14.82 15.72 15.21 15.4L15.47 15.85C15.67 16.2 15.55 16.66 15.19 16.87C15.01 16.98 14.81 17 14.62 16.95C14.42 16.9 14.26 16.77 14.16 16.6Z" fill="#323544"/>
-                            <path d="M2 12C2 17.51 6.49 22 12 22C17.51 22 22 17.51 22 12C22 6.49 17.51 2 12 2C6.49 2 2 6.49 2 12ZM14.23 18.4C13.65 18.24 13.16 17.87 12.86 17.35L12.39 16.53C10.72 16.65 9.1 15.95 8.06 14.64C7.8 14.32 7.85 13.85 8.18 13.59C8.51 13.33 8.98 13.39 9.23 13.71C10.04 14.73 11.39 15.22 12.65 14.99C13.48 14.83 14.24 14.38 14.77 13.71C14.92 13.52 15.16 13.42 15.41 13.43C15.66 13.45 15.88 13.59 16 13.8L16.75 15.1C17.37 16.17 17 17.55 15.93 18.17C15.58 18.37 15.2 18.47 14.81 18.47V18.48C14.62 18.48 14.42 18.45 14.23 18.4ZM16.61 10.46C16.58 10.37 16.3 9.66 15.58 9.66C14.83 9.66 14.55 10.44 14.55 10.45C14.42 10.84 14 11.06 13.6 10.92C13.21 10.79 13 10.36 13.13 9.97C13.36 9.3 14.13 8.15 15.58 8.15C17.03 8.15 17.8 9.29 18.03 9.97C18.16 10.36 17.95 10.79 17.56 10.92C17.48 10.95 17.4 10.96 17.32 10.96V10.97C17.01 10.97 16.72 10.77 16.61 10.46ZM9.45 10.46C9.42 10.37 9.14 9.66 8.42 9.66C7.67 9.66 7.39 10.44 7.39 10.45C7.26 10.84 6.84 11.06 6.44 10.92C6.05 10.79 5.84 10.36 5.97 9.97C6.2 9.3 6.97 8.15 8.42 8.15C9.87 8.15 10.64 9.29 10.87 9.97C11 10.36 10.79 10.79 10.4 10.92C10.32 10.95 10.24 10.96 10.16 10.96V10.97C9.85 10.97 9.56 10.77 9.45 10.46Z" fill="#323544"/>
+                <a href="/videos" class="navs {{ Route::current()->uri() == 'videos' ? 'bg-blue-100' : 'bg-white' }}  px-5 py-2 flex items-center gap-4">
+                    @if (Route::current()->uri() == 'videos')
+                        <svg width="30" height="30" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M15.2391 7.25C15.5625 6.74485 15.75 6.14432 15.75 5.5C15.75 3.70507 14.2949 2.25 12.5 2.25C11.3108 2.25 10.2709 2.88866 9.70433 3.84168C9.23578 3.47117 8.64372 3.25 8 3.25C6.48122 3.25 5.25 4.48122 5.25 6C5.25 6.45011 5.35814 6.87497 5.54985 7.25H4.75C3.50736 7.25 2.5 8.25736 2.5 9.5V17.5C2.5 18.7426 3.50736 19.75 4.75 19.75H16.25C16.4053 19.75 16.557 19.7343 16.7035 19.7043C17.7287 19.4945 18.5 18.5873 18.5 17.5V9.5C18.5 8.25736 17.4926 7.25 16.25 7.25H15.2391ZM12.5 3.75C13.4665 3.75 14.25 4.5335 14.25 5.5C14.25 6.4665 13.4665 7.25 12.5 7.25C11.5335 7.25 10.75 6.4665 10.75 5.5C10.75 4.5335 11.5335 3.75 12.5 3.75ZM8 4.75C8.69036 4.75 9.25 5.30964 9.25 6C9.25 6.69036 8.69036 7.25 8 7.25C7.30964 7.25 6.75 6.69036 6.75 6C6.75 5.30964 7.30964 4.75 8 4.75Z" fill="#323544"/>
+                            <path d="M19.4849 9.18422C19.4949 9.28813 19.5 9.39347 19.5 9.5V17.5C19.5 17.6066 19.4949 17.7119 19.4848 17.8158L20.5663 18.5224C21.3977 19.0655 22.5 18.469 22.5 17.4759V9.52416C22.5 8.53106 21.3977 7.93453 20.5663 8.47769L19.4849 9.18422Z" fill="#323544"/>
                         </svg>
 
-                        <p class="nav-text text-md font-bold">Memes</p>
+
+                        <p class="nav-text text-md font-bold">Videos</p>
                     @else
-                        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 22C6.49 22 2 17.51 2 12C2 6.49 6.49 2 12 2C17.51 2 22 6.49 22 12C22 17.51 17.51 22 12 22ZM12 3.5C7.31 3.5 3.5 7.31 3.5 12C3.5 16.69 7.31 20.5 12 20.5C16.69 20.5 20.5 16.69 20.5 12C20.5 7.31 16.69 3.5 12 3.5ZM14.81 18.48C14.62 18.48 14.42 18.45 14.23 18.4C13.65 18.24 13.16 17.87 12.86 17.35L12.39 16.53C10.72 16.65 9.1 15.95 8.06 14.64C7.8 14.32 7.85 13.85 8.18 13.59C8.51 13.33 8.98 13.39 9.23 13.71C10.04 14.73 11.39 15.22 12.65 14.99C13.48 14.83 14.24 14.38 14.77 13.71C14.92 13.52 15.16 13.42 15.41 13.43C15.66 13.45 15.88 13.59 16 13.8L16.75 15.1C17.37 16.17 17 17.55 15.93 18.17C15.58 18.37 15.2 18.47 14.81 18.47V18.48ZM13.91 16.17L14.16 16.6C14.26 16.77 14.42 16.9 14.62 16.95C14.81 17 15.01 16.98 15.19 16.87C15.55 16.66 15.67 16.2 15.47 15.85L15.21 15.4C14.82 15.72 14.39 15.98 13.92 16.17H13.91ZM17.32 10.97C17.01 10.97 16.72 10.77 16.61 10.46C16.58 10.37 16.3 9.66 15.58 9.66C14.83 9.66 14.55 10.44 14.55 10.45C14.42 10.84 14 11.06 13.6 10.92C13.21 10.79 13 10.36 13.13 9.97C13.36 9.3 14.13 8.15 15.58 8.15C17.03 8.15 17.8 9.29 18.03 9.97C18.16 10.36 17.95 10.79 17.56 10.92C17.48 10.95 17.4 10.96 17.32 10.96V10.97ZM10.16 10.97C9.85 10.97 9.56 10.77 9.45 10.46C9.42 10.37 9.14 9.66 8.42 9.66C7.67 9.66 7.39 10.44 7.39 10.45C7.26 10.84 6.84 11.06 6.44 10.92C6.05 10.79 5.84 10.36 5.97 9.97C6.2 9.3 6.97 8.15 8.42 8.15C9.87 8.15 10.64 9.29 10.87 9.97C11 10.36 10.79 10.79 10.4 10.92C10.32 10.95 10.24 10.96 10.16 10.96V10.97Z" fill="#323544"/>
+                        <svg width="30" height="30" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" clip-rule="evenodd" d="M15.2391 7C15.5625 6.49485 15.75 5.89432 15.75 5.25C15.75 3.45507 14.2949 2 12.5 2C11.3108 2 10.2709 2.63866 9.70433 3.59168C9.23578 3.22117 8.64372 3 8 3C6.48122 3 5.25 4.23122 5.25 5.75C5.25 6.20011 5.35814 6.62497 5.54985 7H4.75C3.50736 7 2.5 8.00736 2.5 9.25V17.25C2.5 18.4926 3.50736 19.5 4.75 19.5H16.25C17.4926 19.5 18.5 18.4926 18.5 17.25V16.9224L20.5663 18.2724C21.3977 18.8155 22.5 18.219 22.5 17.2259V9.27417C22.5 8.28106 21.3977 7.68453 20.5663 8.22769L18.5 9.57763V9.25C18.5 8.00736 17.4926 7 16.25 7H15.2391ZM10.75 5.25C10.75 4.2835 11.5335 3.5 12.5 3.5C13.4665 3.5 14.25 4.2835 14.25 5.25C14.25 6.2165 13.4665 7 12.5 7C11.5335 7 10.75 6.2165 10.75 5.25ZM18.5 11.3694V15.1307L21 16.764V9.73611L18.5 11.3694ZM9.25 5.75C9.25 6.44036 8.69036 7 8 7C7.30964 7 6.75 6.44036 6.75 5.75C6.75 5.05964 7.30964 4.5 8 4.5C8.69036 4.5 9.25 5.05964 9.25 5.75ZM4.75 8.5H16.25C16.6642 8.5 17 8.83579 17 9.25V17.25C17 17.6642 16.6642 18 16.25 18H4.75C4.33579 18 4 17.6642 4 17.25V9.25C4 8.83579 4.33579 8.5 4.75 8.5Z" fill="#323544"/>
                         </svg>
-                        <p class="nav-text text-md">Memes</p>
+
+                        <p class="nav-text text-md">Videos</p>
                     @endif
                 </a>
                 
-                <a href="/anime" class="navs px-5 py-2 flex items-center gap-4">
+                <!-- <a href="/anime" class="navs px-5 py-2 flex items-center gap-4">
                     <svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path fill-rule="evenodd" clip-rule="evenodd" d="M2 6.42187C2 5.17923 3.00736 4.17188 4.25 4.17188H19.75C20.9926 4.17188 22 5.17923 22 6.42188V13.8281C22 15.0708 20.9926 16.0781 19.75 16.0781H12.75V18.3281H15C15.4142 18.3281 15.75 18.6639 15.75 19.0781C15.75 19.4923 15.4142 19.8281 15 19.8281H9.00003C8.58582 19.8281 8.25003 19.4923 8.25003 19.0781C8.25003 18.6639 8.58582 18.3281 9.00003 18.3281H11.25V16.0781H4.25C3.00736 16.0781 2 15.0708 2 13.8281V6.42187ZM4.25 5.67188C3.83579 5.67188 3.5 6.00766 3.5 6.42187V13.8281C3.5 14.2423 3.83579 14.5781 4.25 14.5781H19.75C20.1642 14.5781 20.5 14.2423 20.5 13.8281V6.42188C20.5 6.00766 20.1642 5.67188 19.75 5.67188H4.25Z" fill="#323544"/>
                     </svg>
                     <p class="text-md">Anime</p>
-                </a>
+                </a> -->
             </nav>
     
             <footer class="flex-0 py-5 px-3.5">
